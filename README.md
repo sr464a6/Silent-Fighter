@@ -12,28 +12,6 @@ The battle begins.
 
 ---
 
-## 🎮 Game Overview
-
-**Silent Fighter** is a fast-paced 2D fighting game featuring:
-
-* 🥷 Pixel-art fighting gameplay
-* 🏃 Walking and running
-* 🦘 Jumping and landing
-* 👊 Normal attacks
-* ⚡ Powerful attacks
-* 🥋 Ninja-style combat animations
-* 💥 Hit effects
-* 🔥 Combo system
-* ❤️ Health system
-* 🏆 Score system
-* 👑 Victory screen
-* 💀 Game Over screen
-* 🌃 Night-city environment
-* 🤖 Enemy AI
-* 🎞️ Character sprite animations
-
----
-
 # 🕹️ Controls
 
 | Key   | Action        |
@@ -45,82 +23,6 @@ The battle begins.
 | `K`   | Power Attack  |
 | `R`   | Restart       |
 | `ESC` | Exit Game     |
-
----
-
-# ⚔️ Combat System
-
-## 👊 Normal Attack
-
-Press:
-
-```text
-J
-```
-
-A fast attack with moderate damage and a short cooldown.
-
----
-
-## 💥 Power Attack
-
-Press:
-
-```text
-K
-```
-
-A stronger attack with greater range and damage.
-
-However, the power attack has a longer cooldown.
-
----
-
-## 🥋 Ninja Combat
-
-Silent Fighter can perform fast ninja-inspired movements and attacks.
-
-The planned animation system includes:
-
-```text
-IDLE
-  ↓
-WALK
-  ↓
-RUN
-  ↓
-JUMP
-  ↓
-LAND
-  ↓
-PUNCH
-  ↓
-KICK
-  ↓
-HURT
-  ↓
-VICTORY
-```
-
----
-
-# 🔥 Combo System
-
-Successful attacks increase the player's combo.
-
-Example:
-
-```text
-1 HIT COMBO!
-2 HIT COMBO!
-3 HIT COMBO!
-4 HIT COMBO!
-5 HIT COMBO!
-```
-
-The combo resets if the player stops landing attacks for too long.
-
-Higher combos reward aggressive and accurate gameplay.
 
 ---
 
