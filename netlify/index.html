@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <meta
+        name="theme-color"
+        content="#080808"
+    >
+
+    <meta
+        name="description"
+        content="Silent Fighter - 2D Fighting Game"
+    >
+
+    <title>Silent Fighter</title>
+
+    <link
+        rel="stylesheet"
+        href="style.css"
+    >
+</head>
+
+<body>
+
+    <!-- =====================================================
+         BACKGROUND
+    ====================================================== -->
+
+    <div class="background-grid"></div>
+
+    <!-- =====================================================
+         HEADER
+    ====================================================== -->
+
+    <header class="topbar">
+
+        <div class="logo">
+            <span class="logo-mark">🥷</span>
+
+            <div>
+                <h1>SILENT FIGHTER</h1>
+
+                <p>
+                    BREAK THE SILENCE
+                </p>
+            </div>
+        </div>
+
+        <div class="top-actions">
+
+            <button
+                class="header-btn"
+                onclick="showScreen('leaderboardScreen')"
+            >
+                🏆 LEADERBOARD
+            </button>
+
+            <button
+                class="header-btn"
+                onclick="showScreen('helpScreen')"
+            >
+                ❔ CONTROLS
+            </button>
+
+        </div>
+
+    </header>
+
+
+    <!-- =====================================================
+         MAIN
+    ====================================================== -->
+
+    <main>
+
+        <!-- =================================================
+             MENU
+        ================================================== -->
+
+        <section
+            id="menuScreen"
+            class="screen active"
+        >
+
+            <div class="hero">
+
+                <div class="hero-left">
+
+                    <div class="eyebrow">
+                        2D PIXEL FIGHTING GAME
+                    </div>
+
+                    <h2>
+                        SILENCE
+                        <span>IS OVER.</span>
+                    </h2>
+
+                    <p class="story">
+
+                        Dihina-hina saya diam,
+                        dicela saya juga diam.
+
+                        <br>
+
+                        Tapi kali ini,
+
+                        <strong>
+                            SAYA AKAN LAWAN.
+                        </strong>
+
+                    </p>
+
+                    <div class="hero-buttons">
+
+                        <button
+                            class="primary-btn"
+                            onclick="startGame()"
+                        >
+                            ⚔ MULAI PERTARUNGAN
+                        </button>
+
+                        <button
+                            class="secondary-btn"
+                            onclick="showScreen('leaderboardScreen')"
+                        >
+                            🏆 LEADERBOARD
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+                <div class="fighter-preview">
+
+                    <div class="fighter-shadow"></div>
+
+                    <div class="fighter">
+                        🥷
+                    </div>
+
+                    <div class="enemy">
+                        🕴️
+                    </div>
+
+                    <div class="vs">
+                        VS
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             GAME
+        ================================================== -->
+
+        <section
+            id="gameScreen"
+            class="screen game-screen"
+        >
+
+            <!-- GAME HEADER -->
+
+            <div class="game-header">
+
+                <div class="fighter-info player-info">
+
+                    <div class="fighter-name">
+                        SILENT FIGHTER
+                    </div>
+
+                    <div class="health-wrapper">
+
+                        <div
+                            id="playerHealth"
+                            class="health player-health"
+                        ></div>
+
+                    </div>
+
+                    <div class="hp-text">
+                        HP:
+                        <span id="playerHpText">
+                            100
+                        </span>
+                        / 100
+                    </div>
+
+                </div>
+
+
+                <div class="game-score">
+
+                    <div>
+                        SCORE
+                    </div>
+
+                    <strong id="score">
+                        0
+                    </strong>
+
+                    <small>
+                        COMBO
+                        <span id="combo">
+                            0
+                        </span>
+                    </small>
+
+                </div>
+
+
+                <div class="fighter-info enemy-info">
+
+                    <div class="fighter-name">
+                        THE CORRUPTOR
+                    </div>
+
+                    <div class="health-wrapper">
+
+                        <div
+                            id="enemyHealth"
+                            class="health enemy-health"
+                        ></div>
+
+                    </div>
+
+                    <div class="hp-text">
+                        HP:
+                        <span id="enemyHpText">
+                            100
+                        </span>
+                        / 100
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ARENA -->
+
+            <div
+                id="arena"
+                class="arena"
+            >
+
+                <div class="arena-light"></div>
+
+                <div class="arena-title">
+                    THE FINAL SILENCE
+                </div>
+
+
+                <!-- PLAYER -->
+
+                <div
+                    id="player"
+                    class="character player-character"
+                >
+
+                    <div class="character-shadow"></div>
+
+                    <div class="character-body">
+                        🥷
+                    </div>
+
+                    <div
+                        id="playerAttack"
+                        class="attack-effect"
+                    ></div>
+
+                </div>
+
+
+                <!-- ENEMY -->
+
+                <div
+                    id="enemy"
+                    class="character enemy-character"
+                >
+
+                    <div class="character-shadow"></div>
+
+                    <div class="character-body">
+                        🕴️
+                    </div>
+
+                    <div
+                        id="enemyAttack"
+                        class="attack-effect enemy-attack"
+                    ></div>
+
+                </div>
+
+
+                <!-- COMBO TEXT -->
+
+                <div
+                    id="comboPopup"
+                    class="combo-popup"
+                ></div>
+
+
+                <!-- GAME MESSAGE -->
+
+                <div
+                    id="gameMessage"
+                    class="game-message hidden"
+                ></div>
+
+            </div>
+
+
+            <!-- CONTROLS -->
+
+            <div class="game-controls">
+
+                <div class="control-group">
+
+                    <span>
+                        A
+                    </span>
+
+                    <span>
+                        D
+                    </span>
+
+                    <small>
+                        MOVE
+                    </small>
+
+                </div>
+
+
+                <div class="control-group">
+
+                    <span>
+                        W
+                    </span>
+
+                    <small>
+                        JUMP
+                    </small>
+
+                </div>
+
+
+                <div class="control-group attack-controls">
+
+                    <span>
+                        J
+                    </span>
+
+                    <small>
+                        ATTACK
+                    </small>
+
+                    <span>
+                        K
+                    </span>
+
+                    <small>
+                        POWER
+                    </small>
+
+                </div>
+
+
+                <button
+                    class="restart-btn"
+                    onclick="restartGame()"
+                >
+                    R RESTART
+                </button>
+
+                <button
+                    class="exit-btn"
+                    onclick="exitGame()"
+                >
+                    ESC EXIT
+                </button>
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             GAME OVER
+        ================================================== -->
+
+        <section
+            id="resultScreen"
+            class="screen result-screen"
+        >
+
+            <div class="result-card">
+
+                <div
+                    id="resultIcon"
+                    class="result-icon"
+                >
+                    🏆
+                </div>
+
+                <h2 id="resultTitle">
+                    VICTORY
+                </h2>
+
+                <p id="resultSubtitle">
+                    The silence has been broken.
+                </p>
+
+
+                <div class="final-score">
+
+                    <span>
+                        FINAL SCORE
+                    </span>
+
+                    <strong id="finalScore">
+                        0
+                    </strong>
+
+                </div>
+
+
+                <div class="result-stats">
+
+                    <div>
+                        <span>
+                            MAX COMBO
+                        </span>
+
+                        <strong id="finalCombo">
+                            0
+                        </strong>
+                    </div>
+
+                    <div>
+                        <span>
+                            DAMAGE
+                        </span>
+
+                        <strong id="finalDamage">
+                            0
+                        </strong>
+                    </div>
+
+                </div>
+
+
+                <div class="player-name-input">
+
+                    <label>
+                        NAMA PEMAIN
+                    </label>
+
+                    <input
+                        id="playerName"
+                        type="text"
+                        maxlength="20"
+                        placeholder="Masukkan nama"
+                    >
+
+                </div>
+
+
+                <div class="result-buttons">
+
+                    <button
+                        class="primary-btn"
+                        onclick="saveScore()"
+                    >
+                        🏆 SIMPAN SCORE
+                    </button>
+
+                    <button
+                        class="secondary-btn"
+                        onclick="startGame()"
+                    >
+                        ⚔ MAIN LAGI
+                    </button>
+
+                    <button
+                        class="secondary-btn"
+                        onclick="showScreen('menuScreen')"
+                    >
+                        MENU UTAMA
+                    </button>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             LEADERBOARD
+        ================================================== -->
+
+        <section
+            id="leaderboardScreen"
+            class="screen"
+        >
+
+            <div class="page-container">
+
+                <div class="page-heading">
+
+                    <div class="eyebrow">
+                        GLOBAL RANKING
+                    </div>
+
+                    <h2>
+                        🏆 LEADERBOARD
+                    </h2>
+
+                    <p>
+                        Para fighter terbaik yang berhasil
+                        memecahkan silence.
+                    </p>
+
+                </div>
+
+
+                <div class="leaderboard-card">
+
+                    <div class="leaderboard-head">
+
+                        <span>
+                            #
+                        </span>
+
+                        <span>
+                            PLAYER
+                        </span>
+
+                        <span>
+                            SCORE
+                        </span>
+
+                        <span>
+                            COMBO
+                        </span>
+
+                        <span>
+                            DATE
+                        </span>
+
+                    </div>
+
+
+                    <div
+                        id="leaderboardList"
+                        class="leaderboard-list"
+                    >
+
+                        <div class="loading">
+                            Loading leaderboard...
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <button
+                    class="secondary-btn back-btn"
+                    onclick="showScreen('menuScreen')"
+                >
+                    ← KEMBALI
+                </button>
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             HELP
+        ================================================== -->
+
+        <section
+            id="helpScreen"
+            class="screen"
+        >
+
+            <div class="page-container">
+
+                <div class="page-heading">
+
+                    <div class="eyebrow">
+                        HOW TO PLAY
+                    </div>
+
+                    <h2>
+                        🎮 CONTROLS
+                    </h2>
+
+                </div>
+
+
+                <div class="controls-card">
+
+                    <div class="control-row">
+
+                        <div class="key">
+                            A
+                        </div>
+
+                        <div>
+                            <strong>
+                                Move Left
+                            </strong>
+
+                            <p>
+                                Bergerak ke kiri.
+                            </p>
+                        </div>
+
+                    </div>
+
+
+                    <div class="control-row">
+
+                        <div class="key">
+                            D
+                        </div>
+
+                        <div>
+                            <strong>
+                                Move Right
+                            </strong>
+
+                            <p>
+                                Bergerak ke kanan.
+                            </p>
+                        </div>
+
+                    </div>
+
+
+                    <div class="control-row">
+
+                        <div class="key">
+                            W
+                        </div>
+
+                        <div>
+                            <strong>
+                                Jump
+                            </strong>
+
+                            <p>
+                                Lompat untuk menghindari serangan.
+                            </p>
+                        </div>
+
+                    </div>
+
+
+                    <div class="control-row">
+
+                        <div class="key attack-key">
+                            J
+                        </div>
+
+                        <div>
+                            <strong>
+                                Normal Attack
+                            </strong>
+
+                            <p>
+                                Serangan normal.
+                            </p>
+                        </div>
+
+                    </div>
+
+
+                    <div class="control-row">
+
+                        <div class="key power-key">
+                            K
+                        </div>
+
+                        <div>
+                            <strong>
+                                Power Attack
+                            </strong>
+
+                            <p>
+                                Serangan kuat dengan damage lebih besar.
+                            </p>
+                        </div>
+
+                    </div>
+
+
+                    <div class="control-row">
+
+                        <div class="key">
+                            R
+                        </div>
+
+                        <div>
+                            <strong>
+                                Restart
+                            </strong>
+
+                            <p>
+                                Mulai pertarungan dari awal.
+                            </p>
+                        </div>
+
+                    </div>
+
+
+                    <div class="control-row">
+
+                        <div class="key">
+                            ESC
+                        </div>
+
+                        <div>
+                            <strong>
+                                Exit
+                            </strong>
+
+                            <p>
+                                Kembali ke menu.
+                            </p>
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <button
+                    class="secondary-btn back-btn"
+                    onclick="showScreen('menuScreen')"
+                >
+                    ← KEMBALI
+                </button>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <!-- =====================================================
+         TOAST
+    ====================================================== -->
+
+    <div
+        id="toast"
+        class="toast"
+    ></div>
+
+
+    <!-- =====================================================
+         SUPABASE
+    ====================================================== -->
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script src="app.js"></script>
+
+</body>
+</html>
