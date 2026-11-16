@@ -14,6 +14,8 @@
   <img src="https://img.shields.io/badge/Pygame-2D%20Engine-16A34A?style=for-the-badge&logo=python&logoColor=white" alt="Pygame" />
   <img src="https://img.shields.io/badge/Genre-Pixel%20Art%20Fighter-DC2626?style=for-the-badge" alt="Genre" />
   <img src="https://img.shields.io/badge/Architecture-OOP%20%26%20Enemy%20AI-1E293B?style=for-the-badge" alt="Architecture" />
+  <img src="https://img.shields.io/github/repo-size/sr464a6/Silent-Fighter?style=for-the-badge&color=blue" alt="Repo Size" />
+  <img src="https://img.shields.io/github/last-commit/sr464a6/Silent-Fighter?style=for-the-badge&color=red" alt="Last Commit" />
 </p>
 
 </div>
@@ -129,13 +131,10 @@
       <ul>
         <li><b>Python</b></li>
         <li><b>Pygame</b></li>
-        <li>Object-Oriented Programming</li>
-        <li>2D Game Development</li>
-        <li>Sprite Animation</li>
-        <li>Collision Detection</li>
-        <li>Particle Effects</li>
-        <li>Enemy AI</li>
-        <li>Game State Management</li>
+        <li>Object-Oriented Programming (OOP)</li>
+        <li>2D Game Development & Sprite Animation</li>
+        <li>Collision Detection & Enemy AI</li>
+        <li>Particle Effects & Game State Management</li>
       </ul>
     </td>
     <td width="40%" valign="middle" align="center">
@@ -148,10 +147,11 @@
 
 ---
 
-## 📦 Installation
+## 📦 Installation & Running the Game
 
-Make sure Python is installed on your computer.
+Follow these steps to run the game locally on your computer:
 
-**1. Install Pygame:**
+**1. Clone the Repository:**
 ```bash
-pip install pygame
+git clone [https://github.com/sr464a6/Silent-Fighter.git](https://github.com/sr464a6/Silent-Fighter.git)
+cd Silent-Fighter
