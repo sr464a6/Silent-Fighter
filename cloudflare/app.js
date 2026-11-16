@@ -1,1716 +1,610 @@
 /* =========================================================
-   SILENT FIGHTER
-   APP.JS
-   GAME + SUPABASE
+   SILENT FIGHTER - APP.JS
+   Game (requestAnimationFrame) + Supabase leaderboard
    ========================================================= */
 
+/* ---------- SUPABASE ---------- */
+/* Pakai Project URL + PUBLISHABLE key. JANGAN taruh sb_secret_... di frontend. */
+const SUPABASE_URL = "https://fvbknjeakxyypqdzhiif.supabase.co";
+const SUPABASE_ANON_KEY = "MASUKKAN_PUBLISHABLE_KEY_DISINI";
 
-/* =========================================================
-   SUPABASE CONFIG
-   ========================================================= */
+let supabaseClient = null;
+try {
+    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+} catch (e) {
+    console.warn("Supabase tidak tersedia:", e);
+}
 
-/*
-    GANTI dengan Project URL dan PUBLISHABLE KEY kamu.
+/* ---------- SPRITES (SVG, mengikuti gambar Pygame) ---------- */
+const SKIN = "#b4825f";
 
-    JANGAN gunakan:
+const SPRITES = {
+    /* Silent Fighter: kemeja putih, celana hitam, rambut abu-abu */
+    player: `
+<svg viewBox="0 0 100 200" xmlns="http://www.w3.org/2000/svg">
+  <rect x="31" y="130" width="15" height="62" fill="#141414"/>
+  <rect x="54" y="130" width="15" height="62" fill="#141414"/>
+  <rect x="26" y="187" width="24" height="9" fill="#19192a"/>
+  <rect x="53" y="187" width="25" height="9" fill="#19192a"/>
+  <g class="arm-rest" stroke="${SKIN}" stroke-width="11" stroke-linecap="round">
+    <line x1="28" y1="82" x2="15" y2="132"/><line x1="72" y1="82" x2="85" y2="132"/>
+  </g>
+  <rect x="23" y="65" width="54" height="70" fill="#f5f5f5" stroke="#cfcfcf" stroke-width="1"/>
+  <g fill="#5a5a5a"><circle cx="50" cy="77" r="2"/><circle cx="50" cy="94" r="2"/><circle cx="50" cy="111" r="2"/></g>
+  <g class="arm-punch">
+    <line x1="68" y1="80" x2="97" y2="80" stroke="${SKIN}" stroke-width="13" stroke-linecap="round"/>
+    <circle cx="98" cy="80" r="9" fill="${SKIN}"/>
+  </g>
+  <rect x="41" y="50" width="18" height="20" fill="${SKIN}"/>
+  <ellipse cx="50" cy="37" rx="22" ry="22.5" fill="${SKIN}"/>
+  <path d="M28 36 A22 22 0 0 1 72 36" fill="none" stroke="#5a5a5a" stroke-width="7"/>
+  <circle cx="58" cy="38" r="2.6" fill="#141414"/>
+</svg>`,
 
-    sb_secret_...
-
-    Secret key tidak boleh masuk frontend.
-*/
-
-const SUPABASE_URL =
-    "https://fvbknjeakxyypqdzhiif.supabase.co";
-
-const SUPABASE_ANON_KEY =
-    "MASUKKAN_PUBLISHABLE_KEY_DISINI";
-
-
-/* =========================================================
-   SUPABASE CLIENT
-   ========================================================= */
-
-const supabaseClient =
-    window.supabase.createClient(
-        SUPABASE_URL,
-        SUPABASE_ANON_KEY
-    );
-
-
-/* =========================================================
-   GAME STATE
-   ========================================================= */
-
-const game = {
-
-    running: false,
-
-    ended: false,
-
-    playerHp: 100,
-
-    enemyHp: 100,
-
-    score: 0,
-
-    combo: 0,
-
-    maxCombo: 0,
-
-    damage: 0,
-
-    playerX: 18,
-
-    enemyX: 18,
-
-    playerDirection: 1,
-
-    enemyDirection: -1,
-
-    lastAttack: 0,
-
-    enemyLastAttack: 0,
-
-    enemyTimer: null,
-
-    comboTimer: null
-
+    /* The Corruptor: jas hitam, kemeja putih, dasi merah, kacamata gelap */
+    corruptor: `
+<svg viewBox="0 0 100 200" xmlns="http://www.w3.org/2000/svg">
+  <rect x="31" y="130" width="15" height="62" fill="#141414" stroke="#3a3a3a"/>
+  <rect x="54" y="130" width="15" height="62" fill="#141414" stroke="#3a3a3a"/>
+  <rect x="25" y="187" width="25" height="9" fill="#19192a" stroke="#3a3a3a"/>
+  <rect x="53" y="187" width="26" height="9" fill="#19192a" stroke="#3a3a3a"/>
+  <g class="arm-rest" stroke="#141414" stroke-width="12" stroke-linecap="round">
+    <line x1="27" y1="80" x2="15" y2="130"/><line x1="73" y1="80" x2="85" y2="130"/>
+  </g>
+  <rect x="22" y="65" width="56" height="70" fill="#141414" stroke="#444" stroke-width="1.5"/>
+  <polygon points="40,65 60,65 54,120 46,120" fill="#f5f5f5"/>
+  <polygon points="46,70 54,70 55,110 50,119 45,110" fill="#be2828"/>
+  <g class="arm-punch">
+    <line x1="68" y1="80" x2="92" y2="80" stroke="#141414" stroke-width="14" stroke-linecap="round"/>
+    <circle cx="98" cy="80" r="9" fill="${SKIN}"/>
+  </g>
+  <rect x="41" y="50" width="18" height="20" fill="${SKIN}"/>
+  <ellipse cx="50" cy="37" rx="22" ry="22.5" fill="${SKIN}"/>
+  <path d="M28 36 A22 22 0 0 1 72 36" fill="none" stroke="#141414" stroke-width="8"/>
+  <rect x="31" y="30" width="16" height="8" fill="#0a0a0a" stroke="#555" stroke-width=".6"/>
+  <rect x="53" y="30" width="16" height="8" fill="#0a0a0a" stroke="#555" stroke-width=".6"/>
+  <line x1="47" y1="34" x2="53" y2="34" stroke="#0a0a0a" stroke-width="3"/>
+</svg>`
 };
 
+function renderSprites() {
+    document.querySelectorAll("[data-sprite]").forEach(function (el) {
+        el.innerHTML = SPRITES[el.dataset.sprite] || "";
+    });
+}
 
-/* =========================================================
-   CONSTANTS
-   ========================================================= */
-
+/* ---------- KONSTANTA ---------- */
 const MAX_HP = 100;
-
 const PLAYER_DAMAGE = 10;
-
 const POWER_DAMAGE = 20;
-
 const ENEMY_DAMAGE = 8;
 
 const ATTACK_COOLDOWN = 350;
-
 const POWER_COOLDOWN = 800;
+const JUMP_TIME = 550;
 
+/* Semua jarak/kecepatan dalam "u" = lebar 1 karakter, jadi pas di layar HP maupun desktop */
+const REACH = 1.7;
+const POWER_REACH = 2.0;
+const MIN_GAP = 0.75;
+const PLAYER_SPEED = 4.6;      // u per detik
+const ENEMY_SPEED = 2.6;
+const ENEMY_ENGAGE = 1.55;
+const ENEMY_WINDUP = 330;      // ms (telegraph sebelum memukul)
 
-/* =========================================================
-   DOM
-   ========================================================= */
-
-const $ = function (id) {
-
-    return document.getElementById(id);
-
+/* ---------- STATE ---------- */
+const game = {
+    running: false, ended: false,
+    playerHp: MAX_HP, enemyHp: MAX_HP,
+    score: 0, combo: 0, maxCombo: 0, damage: 0,
+    px: 0.2, ex: 0.8,                // posisi tengah karakter (0..1 lebar arena)
+    pDir: 1, eDir: -1,
+    lastAttack: 0, jumpUntil: 0, freezeUntil: 0,
+    enemyState: "idle", enemyUntil: 0, enemyReady: 0, enemyPower: false,
+    comboTimer: null
 };
 
+const input = { left: false, right: false };
+const $ = function (id) { return document.getElementById(id); };
 
-/* =========================================================
-   INIT
-   ========================================================= */
+let rafId = 0;
+let lastTime = 0;
+let metrics = { w: 800, u: 100 };
 
-document.addEventListener(
-    "DOMContentLoaded",
-    function () {
-
-        setupKeyboard();
-
-        loadLeaderboard();
-
-    }
-);
-
-
-/* =========================================================
-   SCREEN
-   ========================================================= */
-
-function showScreen(
-    screenId
-) {
-
-    document
-        .querySelectorAll(".screen")
-        .forEach(
-            function (screen) {
-
-                screen.classList.remove(
-                    "active"
-                );
-
-            }
-        );
-
-
-    const target =
-        $(screenId);
-
-
-    if (target) {
-
-        target.classList.add(
-            "active"
-        );
-
-    }
-
-
-    if (
-        screenId ===
-        "leaderboardScreen"
-    ) {
-
-        loadLeaderboard();
-
-    }
-
+function measure() {
+    const arena = $("arena");
+    const player = $("player");
+    if (!arena || !player) { return; }
+    const w = arena.clientWidth;
+    const u = player.offsetWidth;
+    if (w > 0 && u > 0) { metrics = { w: w, u: u }; }
 }
 
+/* ---------- INIT ---------- */
+document.addEventListener("DOMContentLoaded", function () {
+    renderSprites();
+    setupKeyboard();
+    setupTouch();
+    loadLeaderboard();
+    window.addEventListener("resize", function () { measure(); positionCharacters(); });
+    window.addEventListener("orientationchange", function () { setTimeout(function () { measure(); positionCharacters(); }, 250); });
+    document.addEventListener("visibilitychange", function () { if (document.hidden) { releaseInput(); } });
+    document.addEventListener("contextmenu", function (e) { if (e.target.closest(".arena, .touch-controls")) { e.preventDefault(); } });
+});
 
-/* =========================================================
-   START GAME
-   ========================================================= */
+/* ---------- SCREEN ---------- */
+function showScreen(screenId) {
+    document.querySelectorAll(".screen").forEach(function (s) { s.classList.remove("active"); });
+    const target = $(screenId);
+    if (target) { target.classList.add("active"); }
+    document.body.classList.toggle("playing", screenId === "gameScreen");
+    if (screenId !== "gameScreen") { window.scrollTo(0, 0); }
+    if (screenId === "leaderboardScreen") { loadLeaderboard(); }
+}
 
+/* ---------- START / RESTART / EXIT ---------- */
 function startGame() {
+    cancelAnimationFrame(rafId);
+    releaseInput();
+    clearTimeout(game.comboTimer);
 
-    stopEnemyAI();
+    Object.assign(game, {
+        running: true, ended: false,
+        playerHp: MAX_HP, enemyHp: MAX_HP,
+        score: 0, combo: 0, maxCombo: 0, damage: 0,
+        px: 0.2, ex: 0.8, pDir: 1, eDir: -1,
+        lastAttack: 0, jumpUntil: 0,
+        enemyState: "idle", enemyUntil: 0, enemyReady: performance.now() + 1600,
+        freezeUntil: performance.now() + 900
+    });
 
+    ["player", "enemy"].forEach(function (id) {
+        const fx = $(id).querySelector(".fx");
+        fx.className = "fx";
+    });
 
-    game.running = true;
-
-    game.ended = false;
-
-    game.playerHp = MAX_HP;
-
-    game.enemyHp = MAX_HP;
-
-    game.score = 0;
-
-    game.combo = 0;
-
-    game.maxCombo = 0;
-
-    game.damage = 0;
-
-    game.playerX = 18;
-
-    game.enemyX = 18;
-
-    game.playerDirection = 1;
-
-    game.enemyDirection = -1;
-
-    game.lastAttack = 0;
-
-    game.enemyLastAttack = 0;
-
-
-    showScreen(
-        "gameScreen"
-    );
-
-
+    showScreen("gameScreen");
+    measure();
     updateUI();
-
     positionCharacters();
+    showGameMessage("FIGHT!", 800);
 
-    clearGameMessage();
-
-    startEnemyAI();
-
+    lastTime = performance.now();
+    rafId = requestAnimationFrame(loop);
 }
 
-
-/* =========================================================
-   RESTART
-   ========================================================= */
-
-function restartGame() {
-
-    startGame();
-
-}
-
-
-/* =========================================================
-   EXIT
-   ========================================================= */
+function restartGame() { startGame(); }
 
 function exitGame() {
-
-    stopEnemyAI();
-
     game.running = false;
-
-    showScreen(
-        "menuScreen"
-    );
-
+    cancelAnimationFrame(rafId);
+    releaseInput();
+    showScreen("menuScreen");
 }
 
+/* ---------- LOOP ---------- */
+function loop(now) {
+    rafId = requestAnimationFrame(loop);
+    const dt = Math.min(0.05, (now - lastTime) / 1000);
+    lastTime = now;
 
-/* =========================================================
-   KEYBOARD
-   ========================================================= */
+    if (!game.running || game.ended) { return; }
+    if (metrics.u < 20) { measure(); }
+    if (now < game.freezeUntil) { return; }
 
-function setupKeyboard() {
+    const k = metrics.u / metrics.w;          // 1u dalam satuan lebar arena
+    const margin = 0.6 * k;
 
-    document.addEventListener(
-        "keydown",
-        function (event) {
-
-            const key =
-                event.key.toLowerCase();
-
-
-            if (
-                key === "escape"
-            ) {
-
-                if (
-                    game.running
-                ) {
-
-                    exitGame();
-
-                }
-
-                return;
-
-            }
-
-
-            if (
-                key === "r"
-            ) {
-
-                if (
-                    game.running
-                ) {
-
-                    restartGame();
-
-                }
-
-                return;
-
-            }
-
-
-            if (
-                !game.running ||
-                game.ended
-            ) {
-
-                return;
-
-            }
-
-
-            switch (key) {
-
-                case "a":
-
-                    movePlayer(-1);
-
-                    break;
-
-
-                case "d":
-
-                    movePlayer(1);
-
-                    break;
-
-
-                case "w":
-
-                    jumpPlayer();
-
-                    break;
-
-
-                case "j":
-
-                    playerAttack(
-                        false
-                    );
-
-                    break;
-
-
-                case "k":
-
-                    playerAttack(
-                        true
-                    );
-
-                    break;
-
-            }
-
-        }
-    );
-
-}
-
-
-/* =========================================================
-   MOVE PLAYER
-   ========================================================= */
-
-function movePlayer(
-    direction
-) {
-
-    if (
-        !game.running ||
-        game.ended
-    ) {
-
-        return;
-
+    /* --- gerak player --- */
+    const dir = (input.right ? 1 : 0) - (input.left ? 1 : 0);
+    if (dir !== 0) {
+        game.pDir = dir;
+        game.px += dir * PLAYER_SPEED * k * dt;
     }
+    game.px = clamp(game.px, margin, 1 - margin);
 
+    /* --- enemy AI --- */
+    enemyUpdate(now, dt, k);
 
-    game.playerDirection =
-        direction;
+    /* jaga jarak minimal supaya tidak menumpuk */
+    const gap = MIN_GAP * k;
+    if (game.px < game.ex) { game.px = Math.min(game.px, game.ex - gap); }
+    else { game.px = Math.max(game.px, game.ex + gap); }
+    game.px = clamp(game.px, margin, 1 - margin);
 
-
-    game.playerX +=
-        direction * 3;
-
-
-    game.playerX =
-        Math.max(
-            5,
-            Math.min(
-                75,
-                game.playerX
-            )
-        );
-
+    /* musuh selalu menghadap player; player menghadap musuh saat diam */
+    game.eDir = game.px < game.ex ? -1 : 1;
+    if (dir === 0) { game.pDir = game.ex > game.px ? 1 : -1; }
 
     positionCharacters();
-
 }
 
+function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
 
-/* =========================================================
-   POSITION
-   ========================================================= */
+function distU() {
+    return Math.abs(game.px - game.ex) * metrics.w / metrics.u;
+}
 
-function positionCharacters() {
+/* ---------- ENEMY ---------- */
+function enemyUpdate(now, dt, k) {
+    const margin = 0.6 * k;
+    const dist = distU();
+    const dir = game.px < game.ex ? -1 : 1;
 
-    const player =
-        $("player");
+    if (game.enemyState === "idle") {
+        if (dist > ENEMY_ENGAGE) {
+            game.ex += dir * ENEMY_SPEED * k * dt;
+            game.ex = clamp(game.ex, margin, 1 - margin);
+        } else if (now >= game.enemyReady) {
+            game.enemyPower = Math.random() < 0.25;
+            game.enemyState = "windup";
+            game.enemyUntil = now + (game.enemyPower ? ENEMY_WINDUP + 220 : ENEMY_WINDUP);
+            restartAnim($("enemy").querySelector(".fx"), "windup");
+        }
+    } else if (game.enemyState === "windup") {
+        if (now >= game.enemyUntil) { enemyStrike(now); }
+    } else if (game.enemyState === "recover") {
+        if (now >= game.enemyReady) { game.enemyState = "idle"; }
+    }
+}
 
-    const enemy =
-        $("enemy");
+function enemyStrike(now) {
+    const enemyFx = $("enemy").querySelector(".fx");
+    enemyFx.classList.remove("windup");
+    restartAnim(enemyFx, "attacking");
+    restartAnim($("enemy").querySelector(".slash"), "show");
 
+    game.enemyState = "recover";
+    game.enemyReady = now + 750 + Math.random() * 600;
 
-    if (!player || !enemy) {
+    const reach = game.enemyPower ? POWER_REACH : REACH;
+    if (distU() > reach + 0.15) { return; }
 
+    if (now < game.jumpUntil) {
+        floatText("player", "DODGE!", "#57e389");
         return;
-
     }
 
+    const dmg = game.enemyPower ? ENEMY_DAMAGE + 4 : ENEMY_DAMAGE;
+    game.playerHp = Math.max(0, game.playerHp - dmg);
+    game.score = Math.max(0, game.score - 20);
 
-    player.style.left =
-        game.playerX + "%";
+    restartAnim($("player").querySelector(".fx"), "hit");
+    floatText("player", "-" + dmg, "#f04444");
+    shake();
+    updateUI();
+    if (navigator.vibrate) { navigator.vibrate(40); }
 
-
-    enemy.style.right =
-        game.enemyX + "%";
-
-
-    if (
-        game.playerDirection <
-        0
-    ) {
-
-        player.style.transform =
-            "scaleX(-1)";
-
-    }
-
-    else {
-
-        player.style.transform =
-            "scaleX(1)";
-
-    }
-
-
-    if (
-        game.enemyDirection >
-        0
-    ) {
-
-        enemy.style.transform =
-            "scaleX(-1)";
-
-    }
-
-    else {
-
-        enemy.style.transform =
-            "scaleX(1)";
-
-    }
-
+    if (game.playerHp <= 0) { loseGame(); }
 }
 
-
-/* =========================================================
-   JUMP
-   ========================================================= */
-
+/* ---------- PLAYER ACTIONS ---------- */
 function jumpPlayer() {
-
-    const player =
-        $("player");
-
-
-    if (!player) {
-        return;
-    }
-
-
-    if (
-        player.classList.contains(
-            "jumping"
-        )
-    ) {
-
-        return;
-
-    }
-
-
-    player.classList.add(
-        "jumping"
-    );
-
-
-    setTimeout(
-        function () {
-
-            player.classList.remove(
-                "jumping"
-            );
-
-        },
-        450
-    );
-
+    const now = performance.now();
+    if (!game.running || game.ended || now < game.freezeUntil || now < game.jumpUntil) { return; }
+    game.jumpUntil = now + JUMP_TIME;
+    const fx = $("player").querySelector(".fx");
+    restartAnim(fx, "jumping");
 }
 
+function playerAttack(power) {
+    const now = performance.now();
+    if (!game.running || game.ended || now < game.freezeUntil) { return; }
 
-/* =========================================================
-   PLAYER ATTACK
-   ========================================================= */
+    const cooldown = power ? POWER_COOLDOWN : ATTACK_COOLDOWN;
+    if (now - game.lastAttack < cooldown) { return; }
+    game.lastAttack = now;
 
-function playerAttack(
-    power
-) {
+    /* otomatis menghadap musuh saat menyerang */
+    game.pDir = game.ex > game.px ? 1 : -1;
+    positionCharacters();
 
-    if (
-        !game.running ||
-        game.ended
-    ) {
+    restartAnim($("player").querySelector(".fx"), "attacking");
+    restartAnim($("player").querySelector(".slash"), "show");
 
-        return;
-
-    }
-
-
-    const now =
-        Date.now();
-
-
-    const cooldown =
-        power
-            ?
-            POWER_COOLDOWN
-            :
-            ATTACK_COOLDOWN;
-
-
-    if (
-        now -
-        game.lastAttack <
-        cooldown
-    ) {
-
-        return;
-
-    }
-
-
-    game.lastAttack =
-        now;
-
-
-    const player =
-        $("player");
-
-
-    const effect =
-        $("playerAttack");
-
-
-    if (player) {
-
-        player.classList.remove(
-            "attacking"
-        );
-
-        void player.offsetWidth;
-
-        player.classList.add(
-            "attacking"
-        );
-
-    }
-
-
-    if (effect) {
-
-        effect.classList.remove(
-            "show"
-        );
-
-        void effect.offsetWidth;
-
-        effect.classList.add(
-            "show"
-        );
-
-    }
-
-
-    const hit =
-        calculateHit();
-
-
-    if (!hit) {
-
+    const reach = power ? POWER_REACH : REACH;
+    if (distU() > reach) {
         resetCombo();
-
         return;
-
     }
-
-
-    const damage =
-        power
-            ?
-            POWER_DAMAGE
-            :
-            PLAYER_DAMAGE;
-
-
-    dealDamageToEnemy(
-        damage
-    );
-
+    dealDamageToEnemy(power ? POWER_DAMAGE : PLAYER_DAMAGE, power);
 }
 
+function dealDamageToEnemy(damage, power) {
+    if (game.ended) { return; }
 
-/* =========================================================
-   CALCULATE HIT
-   ========================================================= */
+    game.enemyHp = Math.max(0, game.enemyHp - damage);
+    game.damage += damage;
+    game.combo += 1;
+    game.maxCombo = Math.max(game.maxCombo, game.combo);
+    game.score += damage * 10;
 
-function calculateHit() {
+    clearTimeout(game.comboTimer);
+    game.comboTimer = setTimeout(resetCombo, 1200);
 
-    const distance =
-        Math.abs(
-            game.playerX -
-            (
-                100 -
-                game.enemyX
-            )
-        );
-
-
-    return distance <
-        20;
-
-}
-
-
-/* =========================================================
-   DEAL ENEMY DAMAGE
-   ========================================================= */
-
-function dealDamageToEnemy(
-    damage
-) {
-
-    if (
-        game.ended
-    ) {
-
-        return;
-
+    /* serangan mengganggu rencana musuh */
+    if (game.enemyState === "windup" && power) {
+        game.enemyState = "recover";
+        game.enemyReady = performance.now() + 600;
+        $("enemy").querySelector(".fx").classList.remove("windup");
     }
-
-
-    game.enemyHp =
-        Math.max(
-            0,
-            game.enemyHp -
-            damage
-        );
-
-
-    game.damage +=
-        damage;
-
-
-    game.combo +=
-        1;
-
-
-    game.maxCombo =
-        Math.max(
-            game.maxCombo,
-            game.combo
-        );
-
-
-    game.score +=
-        damage *
-        10;
-
-
-    if (
-        game.comboTimer
-    ) {
-
-        clearTimeout(
-            game.comboTimer
-        );
-
-    }
-
-
-    game.comboTimer =
-        setTimeout(
-            resetCombo,
-            1200
-        );
-
 
     showCombo();
-
-
-    enemyHitAnimation();
-
+    restartAnim($("enemy").querySelector(".fx"), "hit");
+    floatText("enemy", "-" + damage, "#ffd166");
+    if (power) { shake(); }
     updateUI();
 
-
-    if (
-        game.enemyHp <=
-        0
-    ) {
-
-        winGame();
-
-    }
-
+    if (game.enemyHp <= 0) { winGame(); }
 }
-
-
-/* =========================================================
-   ENEMY HIT
-   ========================================================= */
-
-function enemyHitAnimation() {
-
-    const enemy =
-        $("enemy");
-
-
-    if (!enemy) {
-        return;
-    }
-
-
-    enemy.classList.remove(
-        "hit"
-    );
-
-
-    void enemy.offsetWidth;
-
-
-    enemy.classList.add(
-        "hit"
-    );
-
-}
-
-
-/* =========================================================
-   COMBO
-   ========================================================= */
-
-function showCombo() {
-
-    const popup =
-        $("comboPopup");
-
-
-    if (!popup) {
-        return;
-    }
-
-
-    if (
-        game.combo <=
-        1
-    ) {
-
-        return;
-
-    }
-
-
-    popup.textContent =
-        game.combo +
-        " HIT COMBO!";
-
-
-    popup.classList.remove(
-        "show"
-    );
-
-
-    void popup.offsetWidth;
-
-
-    popup.classList.add(
-        "show"
-    );
-
-}
-
-
-/* =========================================================
-   RESET COMBO
-   ========================================================= */
 
 function resetCombo() {
-
-    game.combo =
-        0;
-
-
+    game.combo = 0;
     updateUI();
-
 }
 
-
-/* =========================================================
-   ENEMY AI
-   ========================================================= */
-
-function startEnemyAI() {
-
-    stopEnemyAI();
-
-
-    game.enemyTimer =
-        setInterval(
-            function () {
-
-                if (
-                    !game.running ||
-                    game.ended
-                ) {
-
-                    return;
-
-                }
-
-
-                enemyThink();
-
-            },
-            850
-        );
-
+/* ---------- INPUT: KEYBOARD ---------- */
+function releaseInput() {
+    input.left = false;
+    input.right = false;
+    document.querySelectorAll(".tbtn.on").forEach(function (b) { b.classList.remove("on"); });
 }
 
+function setupKeyboard() {
+    document.addEventListener("keydown", function (event) {
+        if (event.target && /input|textarea/i.test(event.target.tagName)) { return; }
+        const key = event.key.toLowerCase();
 
-/* =========================================================
-   STOP AI
-   ========================================================= */
+        if (key === "escape") { if (game.running) { exitGame(); } return; }
+        if (key === "r") { if (game.running) { restartGame(); } return; }
+        if (!game.running || game.ended) { return; }
 
-function stopEnemyAI() {
+        if (["arrowleft", "arrowright", "arrowup", " "].includes(key)) { event.preventDefault(); }
+        if (event.repeat) { return; }
 
-    if (
-        game.enemyTimer
-    ) {
+        switch (key) {
+            case "a": case "arrowleft":  input.left = true; break;
+            case "d": case "arrowright": input.right = true; break;
+            case "w": case "arrowup": case " ": jumpPlayer(); break;
+            case "j": playerAttack(false); break;
+            case "k": playerAttack(true); break;
+        }
+    });
 
-        clearInterval(
-            game.enemyTimer
-        );
+    document.addEventListener("keyup", function (event) {
+        const key = event.key.toLowerCase();
+        if (key === "a" || key === "arrowleft")  { input.left = false; }
+        if (key === "d" || key === "arrowright") { input.right = false; }
+    });
 
-        game.enemyTimer =
-            null;
-
-    }
-
+    window.addEventListener("blur", releaseInput);
 }
 
+/* ---------- INPUT: SENTUH ---------- */
+function setupTouch() {
+    document.querySelectorAll(".tbtn").forEach(function (btn) {
+        const act = btn.dataset.act;
 
-/* =========================================================
-   ENEMY THINK
-   ========================================================= */
-
-function enemyThink() {
-
-    const playerPosition =
-        game.playerX;
-
-
-    const enemyPosition =
-        100 -
-        game.enemyX;
-
-
-    const distance =
-        playerPosition -
-        enemyPosition;
-
-
-    if (
-        Math.abs(distance) >
-        18
-    ) {
-
-        if (
-            distance > 0
-        ) {
-
-            game.enemyX -= 2;
-
-            game.enemyDirection =
-                1;
-
+        function press(e) {
+            e.preventDefault();
+            try { btn.setPointerCapture(e.pointerId); } catch (err) { /* abaikan */ }
+            btn.classList.add("on");
+            if (act === "left")   { input.left = true; }
+            if (act === "right")  { input.right = true; }
+            if (act === "jump")   { jumpPlayer(); }
+            if (act === "attack") { playerAttack(false); }
+            if (act === "power")  { playerAttack(true); }
         }
 
-        else {
-
-            game.enemyX += 2;
-
-            game.enemyDirection =
-                -1;
-
+        function release(e) {
+            e.preventDefault();
+            btn.classList.remove("on");
+            if (act === "left")  { input.left = false; }
+            if (act === "right") { input.right = false; }
         }
 
-
-        game.enemyX =
-            Math.max(
-                5,
-                Math.min(
-                    75,
-                    game.enemyX
-                )
-            );
-
-
-        positionCharacters();
-
-        return;
-
-    }
-
-
-    enemyAttack();
-
+        btn.addEventListener("pointerdown", press);
+        btn.addEventListener("pointerup", release);
+        btn.addEventListener("pointercancel", release);
+        btn.addEventListener("lostpointercapture", release);
+    });
 }
 
+/* ---------- TAMPILAN ---------- */
+function positionCharacters() {
+    const player = $("player");
+    const enemy = $("enemy");
+    if (!player || !enemy) { return; }
 
-/* =========================================================
-   ENEMY ATTACK
-   ========================================================= */
-
-function enemyAttack() {
-
-    const now =
-        Date.now();
-
-
-    if (
-        now -
-        game.enemyLastAttack <
-        1000
-    ) {
-
-        return;
-
-    }
-
-
-    game.enemyLastAttack =
-        now;
-
-
-    const enemy =
-        $("enemy");
-
-
-    const effect =
-        $("enemyAttack");
-
-
-    if (enemy) {
-
-        enemy.classList.remove(
-            "attacking"
-        );
-
-        void enemy.offsetWidth;
-
-        enemy.classList.add(
-            "attacking"
-        );
-
-    }
-
-
-    if (effect) {
-
-        effect.classList.remove(
-            "show"
-        );
-
-        void effect.offsetWidth;
-
-        effect.classList.add(
-            "show"
-        );
-
-    }
-
-
-    const hit =
-        calculateHit();
-
-
-    if (!hit) {
-        return;
-    }
-
-
-    /*
-       Player has a chance to dodge
-       while jumping.
-    */
-
-    const player =
-        $("player");
-
-
-    if (
-        player &&
-        player.classList.contains(
-            "jumping"
-        )
-    ) {
-
-        showToast(
-            "DODGE!"
-        );
-
-        return;
-
-    }
-
-
-    game.playerHp =
-        Math.max(
-            0,
-            game.playerHp -
-            ENEMY_DAMAGE
-        );
-
-
-    game.score =
-        Math.max(
-            0,
-            game.score -
-            20
-        );
-
-
-    updateUI();
-
-
-    if (
-        game.playerHp <=
-        0
-    ) {
-
-        loseGame();
-
-    }
-
+    player.style.left = (game.px * 100) + "%";
+    enemy.style.left = (game.ex * 100) + "%";
+    player.style.setProperty("--dir", game.pDir);
+    enemy.style.setProperty("--dir", game.eDir);
 }
 
-
-/* =========================================================
-   WIN
-   ========================================================= */
-
-function winGame() {
-
-    if (
-        game.ended
-    ) {
-
-        return;
-
+function restartAnim(el, cls) {
+    if (!el) { return; }
+    el.classList.remove(cls);
+    void el.offsetWidth;
+    el.classList.add(cls);
+    if (cls === "attacking" || cls === "hit") {
+        setTimeout(function () { el.classList.remove(cls); }, 260);
+    } else if (cls === "jumping") {
+        setTimeout(function () { el.classList.remove(cls); }, JUMP_TIME + 30);
     }
-
-
-    game.ended =
-        true;
-
-    game.running =
-        false;
-
-
-    stopEnemyAI();
-
-
-    game.score +=
-        1000;
-
-
-    showResult(
-        true
-    );
-
 }
 
+function floatText(who, text, color) {
+    const arena = $("arena");
+    const el = $(who);
+    if (!arena || !el) { return; }
 
-/* =========================================================
-   LOSE
-   ========================================================= */
-
-function loseGame() {
-
-    if (
-        game.ended
-    ) {
-
-        return;
-
-    }
-
-
-    game.ended =
-        true;
-
-    game.running =
-        false;
-
-
-    stopEnemyAI();
-
-
-    showResult(
-        false
-    );
-
+    const t = document.createElement("div");
+    t.className = "float-text";
+    t.textContent = text;
+    t.style.color = color;
+    t.style.left = el.style.left;
+    t.style.top = (el.offsetTop - 6) + "px";
+    arena.appendChild(t);
+    setTimeout(function () { t.remove(); }, 750);
 }
 
-
-/* =========================================================
-   RESULT
-   ========================================================= */
-
-function showResult(
-    victory
-) {
-
-    const title =
-        $("resultTitle");
-
-    const subtitle =
-        $("resultSubtitle");
-
-    const icon =
-        $("resultIcon");
-
-
-    if (victory) {
-
-        icon.textContent =
-            "🏆";
-
-        title.textContent =
-            "VICTORY";
-
-        subtitle.textContent =
-            "The silence has been broken.";
-
-    }
-
-    else {
-
-        icon.textContent =
-            "💀";
-
-        title.textContent =
-            "GAME OVER";
-
-        subtitle.textContent =
-            "The Corruptor has won.";
-
-    }
-
-
-    $("finalScore").textContent =
-        game.score;
-
-
-    $("finalCombo").textContent =
-        game.maxCombo;
-
-
-    $("finalDamage").textContent =
-        game.damage;
-
-
-    $("playerName").value =
-        "";
-
-
-    showScreen(
-        "resultScreen"
-    );
-
+function shake() {
+    const arena = $("arena");
+    arena.classList.remove("shake");
+    void arena.offsetWidth;
+    arena.classList.add("shake");
 }
 
+function showCombo() {
+    const popup = $("comboPopup");
+    if (!popup || game.combo <= 1) { return; }
+    popup.textContent = game.combo + " HIT COMBO!";
+    restartAnim(popup, "show");
+}
 
-/* =========================================================
-   UPDATE UI
-   ========================================================= */
+function showGameMessage(text, ms) {
+    const m = $("gameMessage");
+    if (!m) { return; }
+    m.textContent = text;
+    m.classList.remove("hidden");
+    setTimeout(function () { m.classList.add("hidden"); }, ms);
+}
 
 function updateUI() {
+    $("playerHpText").textContent = game.playerHp;
+    $("enemyHpText").textContent = game.enemyHp;
+    $("score").textContent = game.score;
+    $("combo").textContent = game.combo;
 
-    $("playerHpText").textContent =
-        game.playerHp;
-
-
-    $("enemyHpText").textContent =
-        game.enemyHp;
-
-
-    $("score").textContent =
-        game.score;
-
-
-    $("combo").textContent =
-        game.combo;
-
-
-    $("playerHealth").style.width =
-        game.playerHp +
-        "%";
-
-
-    $("enemyHealth").style.width =
-        game.enemyHp +
-        "%";
-
+    const ph = $("playerHealth");
+    const eh = $("enemyHealth");
+    ph.style.width = game.playerHp + "%";
+    eh.style.width = game.enemyHp + "%";
+    ph.classList.toggle("low", game.playerHp <= 25);
+    eh.classList.toggle("low", game.enemyHp <= 25);
 }
 
-
-/* =========================================================
-   GAME MESSAGE
-   ========================================================= */
-
-function clearGameMessage() {
-
-    const message =
-        $("gameMessage");
-
-
-    if (!message) {
-        return;
-    }
-
-
-    message.classList.add(
-        "hidden"
-    );
-
-
-    message.textContent =
-        "";
-
+/* ---------- WIN / LOSE ---------- */
+function winGame() {
+    if (game.ended) { return; }
+    game.ended = true;
+    game.running = false;
+    releaseInput();
+    game.score += 1000;
+    updateUI();
+    showGameMessage("K.O.!", 900);
+    setTimeout(function () { showResult(true); }, 1000);
 }
 
+function loseGame() {
+    if (game.ended) { return; }
+    game.ended = true;
+    game.running = false;
+    releaseInput();
+    showGameMessage("K.O.!", 900);
+    setTimeout(function () { showResult(false); }, 1000);
+}
 
-/* =========================================================
-   SAVE SCORE
-   ========================================================= */
+function showResult(victory) {
+    $("resultIcon").textContent = victory ? "🏆" : "💀";
+    $("resultTitle").textContent = victory ? "VICTORY" : "GAME OVER";
+    $("resultSubtitle").textContent = victory ? "The silence has been broken." : "The Corruptor has won.";
+    $("finalScore").textContent = game.score;
+    $("finalCombo").textContent = game.maxCombo;
+    $("finalDamage").textContent = game.damage;
+    $("playerName").value = "";
+    showScreen("resultScreen");
+}
 
+/* ---------- LEADERBOARD ---------- */
 async function saveScore() {
-
-    const input =
-        $("playerName");
-
-
-    let name =
-        input.value.trim();
-
-
-    if (!name) {
-
-        name =
-            "Anonymous";
-
-    }
-
-
-    if (
-        name.length >
-        20
-    ) {
-
-        name =
-            name.substring(
-                0,
-                20
-            );
-
-    }
-
+    let name = $("playerName").value.trim() || "Anonymous";
+    name = name.substring(0, 20);
 
     try {
+        if (!supabaseClient) { throw new Error("Supabase belum terhubung"); }
 
-        const result =
-            await supabaseClient
-                .from(
-                    "leaderboard"
-                )
-                .insert([
-                    {
+        const result = await supabaseClient.from("leaderboard").insert([{
+            player_name: name,
+            score: game.score,
+            max_combo: game.maxCombo,
+            damage: game.damage
+        }]);
+        if (result.error) { throw result.error; }
 
-                        player_name:
-                            name,
-
-                        score:
-                            game.score,
-
-                        max_combo:
-                            game.maxCombo,
-
-                        damage:
-                            game.damage
-
-                    }
-                ]);
-
-
-        if (
-            result.error
-        ) {
-
-            throw result.error;
-
-        }
-
-
-        showToast(
-            "Score berhasil disimpan!"
-        );
-
-
-        showScreen(
-            "leaderboardScreen"
-        );
-
+        showToast("Score berhasil disimpan!");
+        showScreen("leaderboardScreen");
+    } catch (error) {
+        console.error(error);
+        showToast("Gagal menyimpan score: " + error.message, true);
     }
-
-    catch (error) {
-
-        console.error(
-            error
-        );
-
-
-        showToast(
-            "Gagal menyimpan score: " +
-            error.message,
-            true
-        );
-
-    }
-
 }
-
-
-/* =========================================================
-   LOAD LEADERBOARD
-   ========================================================= */
 
 async function loadLeaderboard() {
-
-    const list =
-        $("leaderboardList");
-
-
-    if (!list) {
-        return;
-    }
-
-
-    list.innerHTML = `
-        <div class="loading">
-            Loading leaderboard...
-        </div>
-    `;
-
+    const list = $("leaderboardList");
+    if (!list) { return; }
+    list.innerHTML = '<div class="loading">Loading leaderboard...</div>';
 
     try {
+        if (!supabaseClient) { throw new Error("Supabase belum terhubung"); }
 
-        const result =
-            await supabaseClient
-                .from(
-                    "leaderboard"
-                )
-                .select(
-                    "*"
-                )
-                .order(
-                    "score",
-                    {
-                        ascending:
-                            false
-                    }
-                )
-                .limit(
-                    50
-                );
+        const result = await supabaseClient.from("leaderboard").select("*")
+            .order("score", { ascending: false }).limit(50);
+        if (result.error) { throw result.error; }
 
-
-        if (
-            result.error
-        ) {
-
-            throw result.error;
-
-        }
-
-
-        const data =
-            result.data ||
-            [];
-
-
-        if (
-            data.length ===
-            0
-        ) {
-
-            list.innerHTML = `
-                <div class="loading">
-                    Belum ada score.
-                    Jadilah fighter pertama!
-                </div>
-            `;
-
+        const data = result.data || [];
+        if (data.length === 0) {
+            list.innerHTML = '<div class="loading">Belum ada score. Jadilah fighter pertama!</div>';
             return;
-
         }
 
-
-        list.innerHTML =
-            data
-                .map(
-                    function (
-                        player,
-                        index
-                    ) {
-
-                        return `
-                            <div
-                                class="leaderboard-row"
-                            >
-
-                                <span class="rank">
-                                    ${index + 1}
-                                </span>
-
-                                <span
-                                    class="player-rank"
-                                >
-
-                                    <span
-                                        class="rank-avatar"
-                                    >
-                                        ${
-                                            index === 0
-                                                ? "👑"
-                                                : "🥷"
-                                        }
-                                    </span>
-
-                                    <strong>
-                                        ${escapeHtml(
-                                            player.player_name
-                                        )}
-                                    </strong>
-
-                                </span>
-
-                                <span
-                                    class="leader-score"
-                                >
-                                    ${Number(
-                                        player.score
-                                    ).toLocaleString(
-                                        "id-ID"
-                                    )}
-                                </span>
-
-                                <span
-                                    class="leader-combo"
-                                >
-                                    ${
-                                        player.max_combo
-                                    }
-                                </span>
-
-                                <span
-                                    class="leader-date"
-                                >
-                                    ${formatDate(
-                                        player.created_at
-                                    )}
-                                </span>
-
-                            </div>
-                        `;
-
-                    }
-                )
-                .join("");
-
+        list.innerHTML = data.map(function (p, i) {
+            return '<div class="leaderboard-row">' +
+                '<span class="rank">' + (i + 1) + '</span>' +
+                '<span class="player-rank"><span class="rank-avatar">' + (i === 0 ? "👑" : "🥷") + '</span>' +
+                '<strong>' + escapeHtml(p.player_name) + '</strong></span>' +
+                '<span class="leader-score">' + Number(p.score).toLocaleString("id-ID") + '</span>' +
+                '<span class="leader-combo">' + escapeHtml(p.max_combo) + '</span>' +
+                '<span class="leader-date">' + formatDate(p.created_at) + '</span>' +
+                '</div>';
+        }).join("");
+    } catch (error) {
+        console.error(error);
+        list.innerHTML = '<div class="loading">Gagal mengambil leaderboard.<br><br>' + escapeHtml(error.message) + '</div>';
     }
-
-    catch (error) {
-
-        console.error(
-            error
-        );
-
-
-        list.innerHTML = `
-            <div class="loading">
-                Gagal mengambil leaderboard.
-                <br><br>
-                ${escapeHtml(
-                    error.message
-                )}
-            </div>
-        `;
-
-    }
-
 }
 
-
-/* =========================================================
-   FORMAT DATE
-   ========================================================= */
-
-function formatDate(
-    value
-) {
-
-    if (!value) {
-
-        return "-";
-
-    }
-
-
-    const date =
-        new Date(
-            value
-        );
-
-
-    if (
-        Number.isNaN(
-            date.getTime()
-        )
-    ) {
-
-        return "-";
-
-    }
-
-
-    return date.toLocaleDateString(
-        "id-ID",
-        {
-            day:
-                "2-digit",
-
-            month:
-                "2-digit",
-
-            year:
-                "numeric"
-        }
-    );
-
+function formatDate(value) {
+    if (!value) { return "-"; }
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) { return "-"; }
+    return d.toLocaleDateString("id-ID", { day: "2-digit", month: "2-digit", year: "numeric" });
 }
 
+/* ---------- TOAST & UTIL ---------- */
+let toastTimeout = null;
 
-/* =========================================================
-   TOAST
-   ========================================================= */
-
-let toastTimeout =
-    null;
-
-
-function showToast(
-    message,
-    error = false
-) {
-
-    const toast =
-        $("toast");
-
-
-    if (!toast) {
-        return;
-    }
-
-
-    toast.textContent =
-        message;
-
-
-    toast.className =
-        "toast show";
-
-
-    if (error) {
-
-        toast.classList.add(
-            "error"
-        );
-
-    }
-
-
-    if (
-        toastTimeout
-    ) {
-
-        clearTimeout(
-            toastTimeout
-        );
-
-    }
-
-
-    toastTimeout =
-        setTimeout(
-            function () {
-
-                toast.classList.remove(
-                    "show"
-                );
-
-            },
-            3000
-        );
-
+function showToast(message, error) {
+    const toast = $("toast");
+    if (!toast) { return; }
+    toast.textContent = message;
+    toast.className = "toast show" + (error ? " error" : "");
+    clearTimeout(toastTimeout);
+    toastTimeout = setTimeout(function () { toast.classList.remove("show"); }, 3000);
 }
 
-
-/* =========================================================
-   ESCAPE HTML
-   ========================================================= */
-
-function escapeHtml(
-    value
-) {
-
-    if (
-        value === null ||
-        value === undefined
-    ) {
-
-        return "";
-
-    }
-
-
+function escapeHtml(value) {
+    if (value === null || value === undefined) { return ""; }
     return String(value)
-
-        .replace(
-            /&/g,
-            "&amp;"
-        )
-
-        .replace(
-            /</g,
-            "&lt;"
-        )
-
-        .replace(
-            />/g,
-            "&gt;"
-        )
-
-        .replace(
-            /"/g,
-            "&quot;"
-        )
-
-        .replace(
-            /'/g,
-            "&#039;"
-        );
-
+        .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;").replace(/'/g, "&#039;");
 }
 
-
-/* =========================================================
-   GLOBAL FUNCTIONS
-   ========================================================= */
-
-window.startGame =
-    startGame;
-
-window.restartGame =
-    restartGame;
-
-window.exitGame =
-    exitGame;
-
-window.showScreen =
-    showScreen;
-
-window.saveScore =
-    saveScore;
-
-window.loadLeaderboard =
-    loadLeaderboard;
+/* ---------- GLOBAL (dipakai onclick di HTML) ---------- */
+window.startGame = startGame;
+window.restartGame = restartGame;
+window.exitGame = exitGame;
+window.showScreen = showScreen;
+window.saveScore = saveScore;
+window.loadLeaderboard = loadLeaderboard;
