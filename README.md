@@ -1,10 +1,10 @@
 <div align="center">
 
-<!-- ANIMATED ARCADE FIGHTING BANNER -->
-<img src="https://capsule-render.vercel.app/api?type=waving&color=0:09090B,50:991B1B,100:DC2626&height=220&section=header&text=🥷%20SILENT%20FIGHTER&fontSize=42&fontColor=FFFFFF&fontAlignY=38&desc=2D%20Pixel-Art%20Fighting%20Game%20Built%20with%20Python%20%26%20Pygame&descAlignY=60&descSize=16&animation=fadeIn" width="100%" alt="Silent Fighter Banner" />
+<!-- ANIMATED HEADER BANNER -->
+<img src="https://capsule-render.vercel.app/api?type=waving&color=0:09090B,50:991B1B,100:DC2626&height=210&section=header&text=🥷%20SILENT%20FIGHTER&fontSize=40&fontColor=FFFFFF&fontAlignY=38&desc=2D%20Pixel-Art%20Fighting%20Game%20Built%20with%20Python%20%26%20Pygame&descAlignY=60&descSize=16&animation=fadeIn" width="100%" alt="Silent Fighter Banner" />
 
-<!-- DRAMATIC QUOTE TICKER -->
-<img src="https://readme-typing-svg.demolab.com?font=Press+Start+2P&weight=400&size=13&duration=3500&pause=1800&color=F87171&center=true&vCenter=true&width=850&lines=%E2%80%9CDihina-hina+saya+diam%2C+dicela+saya+juga+diam.%E2%80%9D;%E2%80%9CTapi+kali+ini%2C+SAYA+AKAN+LAWAN.%E2%80%9D" alt="Battle Quote" />
+<!-- ANIMATED QUOTE -->
+<img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=600&size=15&duration=3500&pause=1500&color=EF4444&center=true&vCenter=true&width=800&lines=%E2%80%9CDihina-hina+saya+diam%2C+dicela+saya+juga+diam.%E2%80%9D;%E2%80%9CTapi+kali+ini%2C+SAYA+AKAN+LAWAN.%E2%80%9D" alt="Battle Quote" />
 
 <br/>
 
@@ -16,45 +16,48 @@
   <img src="https://img.shields.io/badge/Architecture-OOP%20%26%20Enemy%20AI-1E293B?style=for-the-badge" alt="Architecture" />
 </p>
 
-<br/>
+</div>
 
-<!-- ROW 1: STORY & CHARACTER VERSUS ARENA -->
-<table width="100%">
+---
+
+## ⚔️ Story & Characters
+
+**“Dihina-hina saya diam, dicela saya juga diam. Tapi kali ini, SAYA AKAN LAWAN.”**
+
+**Silent Fighter** is a 2D pixel-art fighting game built with **Python and Pygame**.
+
+<table>
   <tr>
-    <td colspan="3" align="center">
-      <h3>⚔️ THE STORY &amp; THE BATTLE</h3>
-      <p><b>Silent Fighter</b> is a 2D pixel-art fighting game built with <b>Python and Pygame</b>.</p>
-      <blockquote>
-        <em>“Dihina-hina saya diam, dicela saya juga diam. Tapi kali ini, <b>SAYA AKAN LAWAN.</b>”</em>
-      </blockquote>
+    <td width="45%" valign="top">
+      <h3 align="center">🥷 Silent Fighter</h3>
+      <p align="center">
+        <img src="https://img.shields.io/badge/HP-100%20%2F%20100-22C55E?style=flat-square" alt="Silent Fighter HP" />
+      </p>
+      <p>You play as <b>Silent Fighter</b>, a quiet fighter who has endured humiliation and insults for far too long. This time, silence is no longer an option.</p>
     </td>
-  </tr>
-  <tr>
-    <td width="44%" valign="top" align="center">
-      <h4>🥷 SILENT FIGHTER</h4>
-      <img src="https://img.shields.io/badge/HP-100%20%2F%20100-22C55E?style=for-the-badge" alt="Silent Fighter HP" />
-      <p align="left">You play as <b>Silent Fighter</b>, a quiet fighter who has endured humiliation and insults for far too long. This time, silence is no longer an option.</p>
+    <td width="10%" valign="middle" align="center">
+      <h3>⚡ VS ⚡</h3>
     </td>
-    <td width="12%" valign="middle" align="center">
-      <h2>⚡<br/>VS<br/>⚡</h2>
-      <sub><b>The battle begins.</b></sub>
-    </td>
-    <td width="44%" valign="top" align="center">
-      <h4>🕶️ THE CORRUPTOR</h4>
-      <img src="https://img.shields.io/badge/HP-100%20%2F%20100-EF4444?style=for-the-badge" alt="The Corruptor HP" />
-      <p align="left">The enemy is <b>The Corruptor</b>, a ruthless opponent dressed in a black suit, white shirt, red tie, and dark glasses.</p>
+    <td width="45%" valign="top">
+      <h3 align="center">🕶️ The Corruptor</h3>
+      <p align="center">
+        <img src="https://img.shields.io/badge/HP-100%20%2F%20100-EF4444?style=flat-square" alt="The Corruptor HP" />
+      </p>
+      <p>The enemy is <b>The Corruptor</b>, a ruthless opponent dressed in a black suit, white shirt, red tie, and dark glasses.</p>
     </td>
   </tr>
 </table>
 
-<br/>
+> **The battle begins.**
 
-<!-- ROW 2: CONTROLS + HEALTH & SCORE HUD -->
-<table width="100%">
+---
+
+## 🕹️ Controls & Battle Systems
+
+<table>
   <tr>
-    <!-- LEFT CARD: ARCADE CONTROLS -->
-    <td width="48%" valign="top">
-      <h3 align="center">🕹️ Controls</h3>
+    <td width="42%" valign="top">
+      <h3 align="center">⌨️ Controls</h3>
       <table width="100%">
         <thead>
           <tr>
@@ -94,101 +97,61 @@
         </tbody>
       </table>
     </td>
-
-    <!-- RIGHT CARD: HEALTH & SCORE SYSTEM -->
-    <td width="52%" valign="top" align="left">
+    <td width="58%" valign="top">
       <h3 align="center">❤️ Health System</h3>
-      <p>Both fighters have their own health bar.</p>
-      <table width="100%">
-        <tr>
-          <td width="50%" align="center">
-            <b>Silent Fighter</b><br/>
-            <code>100 HP</code>
-          </td>
-          <td width="50%" align="center">
-            <b>The Corruptor</b><br/>
-            <code>100 HP</code>
-          </td>
-        </tr>
-      </table>
+      <p>Both fighters have their own health bar:</p>
       <ul>
-        <li>Reduce The Corruptor's HP to zero to <b>win the battle</b>.</li>
-        <li>If Silent Fighter's HP reaches zero, the <b>game is over</b>.</li>
+        <li><b>Silent Fighter:</b> <code>100 HP</code></li>
+        <li><b>The Corruptor:</b> <code>100 HP</code></li>
       </ul>
-
-      <hr/>
+      <p>Reduce The Corruptor's HP to zero to win the battle. If Silent Fighter's HP reaches zero, the game is over.</p>
 
       <h3 align="center">🏆 Score System</h3>
       <p>Players earn score by successfully damaging The Corruptor.</p>
-      <p>Defeating the enemy awards a large bonus: <code>+1000 SCORE</code></p>
-      <p>Example: <code>SCORE: 1250</code></p>
-      <blockquote>
-        🔥 <em>Try to defeat The Corruptor while maintaining the highest possible combo.</em>
-      </blockquote>
+      <ul>
+        <li>Defeating the enemy awards a large bonus: <code>+1000 SCORE</code></li>
+        <li>Example: <code>SCORE: 1250</code></li>
+      </ul>
+      <p><em>Try to defeat The Corruptor while maintaining the highest possible combo.</em></p>
     </td>
   </tr>
 </table>
 
-<br/>
+---
 
-<!-- ROW 3: ENGINE ARCHITECTURE & ANIMATION SYSTEM -->
-<table width="100%">
+## ⚙️ Technologies & Animation System
+
+<table>
   <tr>
-    <td width="40%" valign="top" align="left">
-      <h3 align="center">🎞️ Animation System</h3>
-      <p>The game is designed to support <b>sprite-based animation</b>.</p>
-      <br/>
-      <div align="center">
-        <img src="https://capsule-render.vercel.app/api?type=soft&color=0:1E293B,100:DC2626&height=55&text=Sprite-Based%20Animation%20Ready&fontSize=15&fontColor=FFFFFF&animation=twinkling" width="95%" alt="Sprite Animation" />
-      </div>
-    </td>
-    <td width="60%" valign="top" align="left">
-      <h3 align="center">⚙️ Technologies</h3>
+    <td width="60%" valign="top">
+      <h3>🛠️ Technologies</h3>
       <p>The game is developed using:</p>
-      <table width="100%">
-        <tr>
-          <td width="50%">🐍 <b>Python</b></td>
-          <td width="50%">💥 <b>Collision Detection</b></td>
-        </tr>
-        <tr>
-          <td>🎮 <b>Pygame</b></td>
-          <td>✨ <b>Particle Effects</b></td>
-        </tr>
-        <tr>
-          <td>🧱 <b>Object-Oriented Programming</b></td>
-          <td>🤖 <b>Enemy AI</b></td>
-        </tr>
-        <tr>
-          <td>🕹️ <b>2D Game Development</b></td>
-          <td>🔄 <b>Game State Management</b></td>
-        </tr>
-        <tr>
-          <td colspan="2" align="center">🎞️ <b>Sprite Animation</b></td>
-        </tr>
-      </table>
+      <ul>
+        <li><b>Python</b></li>
+        <li><b>Pygame</b></li>
+        <li>Object-Oriented Programming</li>
+        <li>2D Game Development</li>
+        <li>Sprite Animation</li>
+        <li>Collision Detection</li>
+        <li>Particle Effects</li>
+        <li>Enemy AI</li>
+        <li>Game State Management</li>
+      </ul>
+    </td>
+    <td width="40%" valign="middle" align="center">
+      <h3>🎞️ Animation System</h3>
+      <p>The game is designed to support <b>sprite-based animation</b>.</p>
+      <img src="https://capsule-render.vercel.app/api?type=soft&color=0:1E293B,100:DC2626&height=55&text=Sprite-Based%20Animation&fontSize=15&fontColor=FFFFFF&animation=twinkling" width="90%" alt="Sprite Animation" />
     </td>
   </tr>
 </table>
 
-</div>
+---
 
-<br/>
-
-<!-- DROPDOWN INSTALLATION (OUTSIDE DIV/TABLE SO GITHUB RENDERS INTERACTIVELY) -->
-<details open>
-<summary><b>📦 Installation &amp; How to Play (Click to Toggle)</b></summary>
-<br/>
+## 📦 Installation
 
 Make sure Python is installed on your computer.
 
 **1. Install Pygame:**
 ```bash
 pip install pygame
-2. Or install all dependencies:
-
-Bash
-pip install -r requirements.txt
-3. Run the game:
-
-Bash
-python silent_fighter.py
