@@ -13,14 +13,14 @@
 
 ---
 
-> *"Dihina-hina saya diam, dicela saya juga diam. Tapi kali ini, SAYA AKAN LAWAN."*
+> *Step into the arena, master your combos, and defeat your opponent.*
 
 ---
 
-## ⚡ Interactive Menu
+## ⚡ Quick Navigation
 
 <details>
-<summary><b>🎮 <u>CLICK TO VIEW CONTROLS</u></b></summary>
+<summary><b>🎮 <u>CONTROLS</u></b></summary>
 
 | Key | Action |
 | :---: | :--- |
@@ -34,18 +34,18 @@
 </details>
 
 <details>
-<summary><b>⚔️ <u>GAMEPLAY & SYSTEM</u></b></summary>
+<summary><b>⚔️ <u>GAMEPLAY & SYSTEMS</u></b></summary>
 
 * **Fighters:** Silent Fighter (100 HP) vs The Corruptor (100 HP)
-* **Objective:** Habiskan HP musuh untuk menang dan raih skor tertinggi (`+1000 Bonus`).
-* **Architecture:** Dibangun dengan konsep Object-Oriented Programming (OOP), Enemy AI, dan Sprite Animation.
+* **Objective:** Reduce the enemy's HP to zero to win and achieve the highest score (`+1000 Bonus` on victory).
+* **Core Tech:** Built using Object-Oriented Programming (OOP), Custom Enemy AI, Sprite Animation, and Collision Detection.
 
 </details>
 
 <details>
-<summary><b>🚀 <u>HOW TO RUN THE GAME</u></b></summary>
+<summary><b>🚀 <u>HOW TO RUN</u></b></summary>
 
-1. **Clone repository:**
+1. **Clone the repository:**
    ```bash
    git clone [https://github.com/sr464a6/Silent-Fighter.git](https://github.com/sr464a6/Silent-Fighter.git)
    cd Silent-Fighter
